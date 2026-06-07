@@ -218,6 +218,7 @@ function renderClassButtons() {
       selectedClass = key;
       renderClassButtons();
       updateMissionInfo();
+      checkAttemptStatus();
       sparks(event.clientX, event.clientY, ["#10a594", "#f6bd3d", "#ff6b55"], 16);
     });
     classGrid.append(btn);
