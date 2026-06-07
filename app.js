@@ -427,14 +427,19 @@ async function checkAttemptStatus() {
   }
   try {
     const response = await fetch("/api/attempt-status", { cache: "no-store" });
+    if (!response.ok) throw new Error("Attempt API unavailable");
     const data = await response.json();
     serverAvailable = Boolean(data.serverMode);
+    standaloneMode = !serverAvailable;
     attemptLocked = Boolean(data.locked);
     lockedAttempt = data.attempt || null;
   } catch (error) {
     serverAvailable = false;
-    attemptLocked = false;
-    lockedAttempt = null;
+    standaloneMode = true;
+    lockedAttempt = student.lastName && student.firstName ? getLocalCurrentAttempt() : null;
+    attemptLocked = Boolean(lockedAttempt);
+    updateStudentGate();
+    return;
   }
   updateStudentGate();
 }
@@ -469,8 +474,8 @@ async function startAttemptOnServer() {
     return true;
   } catch (error) {
     serverAvailable = false;
-    updateStudentGate(true);
-    return false;
+    standaloneMode = true;
+    return startLocalAttempt();
   }
 }
 
