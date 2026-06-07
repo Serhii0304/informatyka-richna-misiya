@@ -118,7 +118,7 @@ let timerId = null;
 let latestResult = null;
 let student = { lastName: "", firstName: "" };
 let serverAvailable = false;
-let standaloneMode = !location.protocol.startsWith("http");
+let standaloneMode = isStandalone();
 let attemptLocked = false;
 let lockedAttempt = null;
 let currentAttemptStarted = false;
@@ -417,7 +417,7 @@ function formatNumericScore(value) {
 }
 
 async function checkAttemptStatus() {
-  if (!location.protocol.startsWith("http")) {
+  if (isStandalone()) {
     serverAvailable = false;
     standaloneMode = true;
     lockedAttempt = student.lastName && student.firstName ? getLocalCurrentAttempt() : null;
@@ -442,6 +442,10 @@ async function checkAttemptStatus() {
     return;
   }
   updateStudentGate();
+}
+
+function isStandalone() {
+  return !location.protocol.startsWith("http") || location.hostname.endsWith("github.io");
 }
 
 async function startAttemptOnServer() {

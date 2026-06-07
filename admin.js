@@ -8,7 +8,7 @@ const studentResultDetail = document.querySelector("#student-result-detail");
 const ADMIN_EMAIL = "sergeymusic0304@gmail.com";
 const ADMIN_PASSWORD = "WeraMore0304";
 const ADMIN_LOCAL_ATTEMPTS_KEY = "informatics_quiz_attempts_v1";
-let localAdminMode = !location.protocol.startsWith("http");
+let localAdminMode = isStandalone();
 
 loginForm.addEventListener("submit", async (event) => {
   event.preventDefault();
@@ -282,7 +282,7 @@ function hideStudentDetail() {
 }
 
 function isStandalone() {
-  return !location.protocol.startsWith("http");
+  return !location.protocol.startsWith("http") || location.hostname.endsWith("github.io");
 }
 
 function isLocalAdminMode() {
