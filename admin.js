@@ -8,18 +8,19 @@ const studentResultDetail = document.querySelector("#student-result-detail");
 const ADMIN_EMAIL = "sergeymusic0304@gmail.com";
 const ADMIN_PASSWORD = "WeraMore0304";
 const ADMIN_LOCAL_ATTEMPTS_KEY = "informatics_quiz_attempts_v1";
+let localAdminMode = !location.protocol.startsWith("http");
 
 loginForm.addEventListener("submit", async (event) => {
   event.preventDefault();
   loginMessage.textContent = "";
   const email = document.querySelector("#admin-email").value.trim();
   const password = document.querySelector("#admin-password").value;
-  if (isStandalone()) {
-    if (email.toLowerCase() === ADMIN_EMAIL && password === ADMIN_PASSWORD) {
-      showDashboard();
-    } else {
-      loginMessage.textContent = "Неправильна адреса або пароль.";
-    }
+  if (!isValidAdminCredentials(email, password)) {
+    loginMessage.textContent = "Неправильна адреса або пароль.";
+    return;
+  }
+  if (isLocalAdminMode()) {
+    showDashboard();
     return;
   }
   try {
@@ -35,7 +36,8 @@ loginForm.addEventListener("submit", async (event) => {
     }
     showDashboard();
   } catch (error) {
-    loginMessage.textContent = "Адмін-панель працює тільки через «Запустити сайт.bat».";
+    enableLocalAdminMode();
+    showDashboard();
   }
 });
 
@@ -44,18 +46,24 @@ document.querySelector("#admin-home-btn")?.addEventListener("click", () => {
   if (typeof showScreen === "function") showScreen("setup");
 });
 document.querySelector("#logout-btn").addEventListener("click", async () => {
-  if (!isStandalone()) {
-    await fetch("/api/admin/logout", { method: "POST" });
+  if (!isLocalAdminMode()) {
+    await fetch("/api/admin/logout", { method: "POST" }).catch(() => {});
   }
   requireAdminLogin();
 });
 
 document.querySelector("#clear-all-btn").addEventListener("click", async () => {
   if (!confirm("Очистити всі записи проходжень і всі IP-блокування?")) return;
-  if (isStandalone()) {
+  if (isLocalAdminMode()) {
     localStorage.removeItem(ADMIN_LOCAL_ATTEMPTS_KEY);
   } else {
-    await fetch("/api/admin/clear-all", { method: "POST" });
+    try {
+      const response = await fetch("/api/admin/clear-all", { method: "POST" });
+      if (!response.ok) throw new Error("Admin API unavailable");
+    } catch (error) {
+      enableLocalAdminMode();
+      localStorage.removeItem(ADMIN_LOCAL_ATTEMPTS_KEY);
+    }
   }
   await loadAttempts();
 });
@@ -73,7 +81,7 @@ async function requireAdminLogin() {
   loginMessage.textContent = "";
   document.querySelector("#admin-email").value = "";
   document.querySelector("#admin-password").value = "";
-  if (!isStandalone()) {
+  if (!isLocalAdminMode()) {
     await fetch("/api/admin/logout", { method: "POST" }).catch(() => {});
   }
 }
@@ -88,19 +96,22 @@ async function loadAttempts() {
   attemptList.innerHTML = "";
   hideStudentDetail();
   dashboardSummary.textContent = "Завантаження...";
-  if (isStandalone()) {
+  if (isLocalAdminMode()) {
     const attempts = readLocalAttempts();
     renderAttempts(attempts);
     return;
   }
-  const response = await fetch("/api/admin/attempts", { cache: "no-store" });
-  if (!response.ok) {
-    loginCard.classList.remove("hidden");
-    dashboard.classList.add("hidden");
+  try {
+    const response = await fetch("/api/admin/attempts", { cache: "no-store" });
+    if (!response.ok) throw new Error("Admin API unavailable");
+    const data = await response.json();
+    renderAttempts(data.attempts || []);
+  } catch (error) {
+    enableLocalAdminMode();
+    const attempts = readLocalAttempts();
+    renderAttempts(attempts);
     return;
   }
-  const data = await response.json();
-  renderAttempts(data.attempts || []);
 }
 
 function renderAttempts(attempts) {
@@ -178,7 +189,7 @@ function bindAttemptActions() {
       const key = card.dataset.key;
       const ip = card.dataset.ip;
       if (!confirm(`Дозволити повторне проходження для ${ip || key}? Старий результат залишиться в журналі.`)) return;
-      if (isStandalone()) {
+      if (isLocalAdminMode()) {
         const attempts = readLocalAttempts().map((attempt) => {
           if ((attempt.id || attempt.ip || "") === key) {
             return {
@@ -191,7 +202,23 @@ function bindAttemptActions() {
         });
         writeLocalAttempts(attempts);
       } else {
-        await fetch(`/api/admin/attempt?ip=${encodeURIComponent(ip)}`, { method: "DELETE" });
+        try {
+          const response = await fetch(`/api/admin/attempt?ip=${encodeURIComponent(ip)}`, { method: "DELETE" });
+          if (!response.ok) throw new Error("Admin API unavailable");
+        } catch (error) {
+          enableLocalAdminMode();
+          const attempts = readLocalAttempts().map((attempt) => {
+            if ((attempt.id || attempt.ip || "") === key) {
+              return {
+                ...attempt,
+                unlockedForRetake: true,
+                unlockedAt: new Date().toISOString()
+              };
+            }
+            return attempt;
+          });
+          writeLocalAttempts(attempts);
+        }
       }
       await loadAttempts();
     });
@@ -256,6 +283,18 @@ function hideStudentDetail() {
 
 function isStandalone() {
   return !location.protocol.startsWith("http");
+}
+
+function isLocalAdminMode() {
+  return localAdminMode || isStandalone();
+}
+
+function enableLocalAdminMode() {
+  localAdminMode = true;
+}
+
+function isValidAdminCredentials(email, password) {
+  return email.toLowerCase() === ADMIN_EMAIL && password === ADMIN_PASSWORD;
 }
 
 function readLocalAttempts() {
