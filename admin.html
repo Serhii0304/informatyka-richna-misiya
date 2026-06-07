@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="uk">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Адміністратор тестів</title>
+  <link rel="stylesheet" href="admin.css">
+</head>
+<body>
+  <main class="admin-shell">
+    <header class="admin-top">
+      <div>
+        <p class="kicker">Панель адміністратора</p>
+        <h1>Контроль проходження тестів</h1>
+      </div>
+      <a class="link-btn" href="index.html">До тестів</a>
+    </header>
+
+    <section id="login-card" class="panel">
+      <div class="section-head">
+        <p class="kicker">Вхід</p>
+        <h2>Доступ тільки для адміністратора</h2>
+      </div>
+      <form id="login-form" class="login-form">
+        <label>
+          <span>Email</span>
+          <input id="admin-email" type="email" autocomplete="username" required>
+        </label>
+        <label>
+          <span>Пароль</span>
+          <input id="admin-password" type="password" autocomplete="current-password" required>
+        </label>
+        <button class="primary-btn" type="submit">Увійти</button>
+      </form>
+      <p id="login-message" class="message"></p>
+    </section>
+
+    <section id="dashboard" class="dashboard hidden">
+      <div class="panel dashboard-head">
+        <div>
+          <p class="kicker">Журнал</p>
+          <h2>Проходження учнів</h2>
+          <p id="dashboard-summary">Завантаження...</p>
+        </div>
+        <div class="toolbar">
+          <button id="refresh-btn" class="plain-btn" type="button">Оновити</button>
+          <button id="logout-btn" class="plain-btn" type="button">Вийти</button>
+        </div>
+      </div>
+
+      <div id="attempt-list" class="attempt-list"></div>
+
+      <div class="panel danger-zone">
+        <div>
+          <p class="kicker">Керування</p>
+          <h2>Скидання записів</h2>
+          <p>Адміністратор може прибрати блокування IP, якщо учневі потрібно дозволити повторний запуск.</p>
+        </div>
+        <button id="clear-all-btn" class="danger-btn" type="button">Очистити всі записи</button>
+      </div>
+    </section>
+  </main>
+
+  <script src="admin.js"></script>
+</body>
+</html>

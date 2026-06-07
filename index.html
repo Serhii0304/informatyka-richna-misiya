@@ -1,0 +1,224 @@
+<!doctype html>
+<html lang="uk">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Інформатика: річна місія</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <canvas id="arena" aria-hidden="true"></canvas>
+
+  <header class="topbar">
+    <div class="logo" aria-hidden="true">
+      <span></span><span></span><span></span><span></span>
+    </div>
+    <div class="top-title">
+      <p>Почуйківська філія Квітневого ліцею</p>
+      <h1>Інформатика: річна місія</h1>
+    </div>
+    <nav class="site-nav" aria-label="Навігація сайту">
+      <button id="home-open" class="nav-link" type="button"><span class="nav-symbol">⌂</span>Головна</button>
+      <button id="admin-open" class="nav-link" type="button"><span class="nav-symbol">○</span>Адміністратор</button>
+    </nav>
+  </header>
+
+  <main>
+    <section id="setup-screen" class="screen active">
+      <div class="hero">
+        <div class="hero-copy">
+          <p class="kicker">Екстернат • онлайн-тест</p>
+          <h2>Обери клас, стартуй місію, набери 7+ балів і відкрий перемогу</h2>
+          <p class="lead">У кожній роботі 24 тестові завдання по 0,5 бала. Відповідь обирається кнопкою, бал рахується автоматично відразу після завершення.</p>
+          <div class="hero-features" aria-label="Переваги тесту">
+            <span><b>◇</b>Безпечний освітній простір</span>
+            <span><b>AI</b>Штучний інтелект і сучасні технології</span>
+            <span><b>&lt;/&gt;</b>Практика коду та алгоритмів</span>
+            <span><b>7+</b>Твоя мета - 7+ балів</span>
+          </div>
+        </div>
+
+        <div class="mission-card">
+          <p class="mission-card-title">Ціль для перемоги</p>
+          <div class="mission-score">
+            <strong>7+</strong>
+            <span>Ціль</span>
+          </div>
+          <div class="mission-stats">
+            <span><b>24</b><small>Завдання</small></span>
+            <span><b>0,5</b><small>Бала</small></span>
+            <span><b>12</b><small>Максимум</small></span>
+            <span><b>7+</b><small>Перемога</small></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="selector-zone student-zone">
+        <div class="section-head">
+          <span class="section-icon">○</span>
+          <p class="kicker">Вхід у місію</p>
+          <h2>Спочатку введи прізвище та ім'я</h2>
+        </div>
+        <div class="student-form">
+          <label>
+            <span>Прізвище</span>
+            <input id="student-last-name" type="text" autocomplete="family-name" placeholder="Наприклад: Петренко" required>
+          </label>
+          <label>
+            <span>Ім'я</span>
+            <input id="student-first-name" type="text" autocomplete="given-name" placeholder="Наприклад: Олена" required>
+          </label>
+        </div>
+        <p id="student-error" class="form-hint">Без прізвища та імені доступ до тесту не відкривається.</p>
+      </div>
+
+      <div class="selector-zone">
+        <div class="section-head">
+          <span class="section-icon">⌂</span>
+          <p class="kicker">Крок 1</p>
+          <h2>Вибери свій клас</h2>
+        </div>
+        <div id="class-grid" class="class-grid"></div>
+      </div>
+
+      <div class="launch-panel">
+        <div class="launch-icon" aria-hidden="true">↗</div>
+        <div>
+          <p class="kicker">Поточний вибір</p>
+          <h2 id="mission-title">6 клас • Річний тест</h2>
+          <p id="mission-detail">24 питання, 60 хв, максимум 12 балів.</p>
+          <div class="launch-facts">
+            <span>24 тестових питання по 0,5 бала</span>
+            <span>60 хвилин</span>
+            <span>Максимум 12 балів</span>
+            <span>Перемога з 7 балів</span>
+          </div>
+        </div>
+        <button id="start-btn" class="primary-btn" type="button" disabled><span>↗</span>Почати місію</button>
+      </div>
+    </section>
+
+    <section id="test-screen" class="screen">
+      <div class="play-layout">
+        <aside class="hud">
+          <button id="home-btn" class="plain-btn" type="button">Вийти</button>
+          <div>
+            <p class="kicker">Місія</p>
+            <h2 id="hud-title">6 клас • Річний тест</h2>
+          </div>
+          <div class="timer-box">
+            <span>Час</span>
+            <strong id="timer">60:00</strong>
+          </div>
+          <div class="level-meter">
+            <div class="ring">
+              <svg viewBox="0 0 120 120">
+                <circle cx="60" cy="60" r="50"></circle>
+                <circle id="ring-progress" cx="60" cy="60" r="50"></circle>
+              </svg>
+              <div><strong id="progress-percent">0%</strong><span>пройдено</span></div>
+            </div>
+          </div>
+          <div class="stats">
+            <span><b id="answered">0</b> / 24 відповідей</span>
+            <span><b id="live-score">0</b> / 24 питань обрано</span>
+          </div>
+        </aside>
+
+        <form id="quiz" class="quiz"></form>
+      </div>
+    </section>
+
+    <section id="result-screen" class="screen">
+      <div class="result-grid">
+        <div id="result-card" class="result-card">
+          <p class="kicker">Фінал місії</p>
+          <h2 id="result-heading">Перемога!</h2>
+          <div class="trophy" aria-hidden="true">
+            <span id="trophy-icon">★</span>
+          </div>
+          <div class="result-meta">
+            <p><b>Учень/учениця:</b> <span id="result-student">-</span></p>
+            <p><b>Тест:</b> <span id="result-test">-</span></p>
+          </div>
+          <div class="final-score"><strong id="final-score">0</strong><span>з 12</span></div>
+          <p id="result-message"></p>
+          <div class="result-buttons">
+            <button id="retry-btn" class="primary-btn" type="button">Спробувати ще раз</button>
+            <button id="another-btn" class="plain-btn" type="button">Інший клас</button>
+            <button id="print-btn" class="plain-btn" type="button">Друк результату</button>
+          </div>
+        </div>
+
+        <div class="review-card">
+          <div class="section-head">
+            <p class="kicker">Розбір</p>
+            <h2>Що зараховано</h2>
+          </div>
+          <div id="review"></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="admin-screen" class="screen">
+      <div class="admin-panel-top">
+        <div>
+          <p class="kicker">Панель адміністратора</p>
+          <h2>Контроль проходження тестів</h2>
+        </div>
+        <button id="admin-back" class="plain-btn" type="button">До тестів</button>
+      </div>
+
+      <div id="login-card" class="admin-panel">
+        <div class="section-head">
+          <p class="kicker">Вхід</p>
+          <h2>Доступ тільки для адміністратора</h2>
+        </div>
+        <form id="login-form" class="admin-login-form">
+          <label>
+            <span>Email</span>
+            <input id="admin-email" type="email" autocomplete="username" required>
+          </label>
+          <label>
+            <span>Пароль</span>
+            <input id="admin-password" type="password" autocomplete="current-password" required>
+          </label>
+          <button class="primary-btn" type="submit">Увійти</button>
+        </form>
+        <p id="login-message" class="admin-message"></p>
+      </div>
+
+      <div id="dashboard" class="admin-dashboard hidden">
+        <div class="admin-panel admin-dashboard-head">
+          <div>
+            <p class="kicker">Журнал</p>
+            <h2>Проходження учнів</h2>
+            <p id="dashboard-summary">Завантаження...</p>
+          </div>
+          <div class="admin-toolbar">
+            <button id="refresh-btn" class="plain-btn" type="button">Оновити</button>
+            <button id="admin-home-btn" class="plain-btn" type="button">Головна сторінка</button>
+            <button id="logout-btn" class="plain-btn" type="button">Вийти</button>
+          </div>
+        </div>
+
+        <div id="student-result-detail" class="admin-panel student-result-detail hidden"></div>
+
+        <div id="attempt-list" class="attempt-list"></div>
+
+        <div class="admin-panel admin-danger-zone">
+          <div>
+            <p class="kicker">Керування</p>
+            <h2>Скидання записів</h2>
+            <p>Адміністратор може прибрати блокування IP, якщо учневі потрібно дозволити повторний запуск.</p>
+          </div>
+          <button id="clear-all-btn" class="danger-btn" type="button">Очистити всі записи</button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script src="app.js"></script>
+  <script src="admin.js"></script>
+</body>
+</html>
